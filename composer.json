@@ -1,0 +1,30 @@
+{
+    "name": "voica.liviu10/boilerplate-mvx",
+    "description": "Description goes here",
+    "type": "project",
+    "require": {
+        "php": "8.2.12",
+        "vlucas/phpdotenv": "^5.5",
+        "php-di/php-di": "^7.0"
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.12"
+        }
+    },
+    "require-dev": {
+        "php": "8.2.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "LiviuVoica\\BoilerplateMVC\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Voica Liviu",
+            "email": "voica.liviu10@gmail.ro"
+        }
+    ],
+    "minimum-stability": "stable"
+}
