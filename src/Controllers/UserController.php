@@ -21,11 +21,6 @@ class UserController
     {
         $data = $this->user->all();
 
-        echo '<pre>';
-        print_r($data);
-        echo '</pre>';
-        die();
-
         return $data;
     }
 }

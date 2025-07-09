@@ -15,6 +15,11 @@ class BaseModel
         $this->table = '';
     }
 
+    public function doesTableExist(): bool
+    {
+        return $this->orm->doesTableExist($this->table);
+    }
+
     public function all(): ?array
     {
         return $this->orm->all($this->table);
