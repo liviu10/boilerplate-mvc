@@ -13,7 +13,8 @@
         }
     },
     "require-dev": {
-        "php": "8.2.12"
+        "php": "8.2.12",
+        "symfony/var-dumper": "^6.2"
     },
     "autoload": {
         "psr-4": {

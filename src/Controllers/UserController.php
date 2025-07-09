@@ -2,21 +2,30 @@
 
 namespace LiviuVoica\BoilerplateMVC\Controllers;
 
-use LiviuVoica\BoilerplateMVC\Core\SQLiteConnection;
 use LiviuVoica\BoilerplateMVC\Models\User;
-use LiviuVoica\BoilerplateMVC\Utils\LogSystem;
+use LiviuVoica\BoilerplateMVC\Core\LogSystem;
 use PDO;
 
 class UserController
 {
-    private PDO $connection;
-    private LogSystem $log;
     private User $user;
+    private LogSystem $log;
 
-    public function __construct(SQLiteConnection $connection)
+    public function __construct(User $user)
     {
-        $this->connection = $connection->getConnection();
+        $this->user = $user;
         $this->log = new LogSystem();
-        $this->user = new User();
+    }
+
+    public function index()
+    {
+        $data = $this->user->all();
+
+        echo '<pre>';
+        print_r($data);
+        echo '</pre>';
+        die();
+
+        return $data;
     }
 }

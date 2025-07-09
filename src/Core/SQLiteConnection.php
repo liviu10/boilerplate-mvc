@@ -2,14 +2,21 @@
 
 namespace LiviuVoica\BoilerplateMVC\Core;
 
-use LiviuVoica\BoilerplateMVC\Utils\LogSystem;
 use Exception;
 use PDO;
 
+/**
+ * Class SQLiteConnection
+ * 
+ * Manages a connection to a SQLite database using PDO.
+ * Usage:
+ * Inject a LogSystem instance into the constructor, then call getConnection()
+ * to retrieve the PDO instance for further operations.
+ */
 class SQLiteConnection
 {
     private const LOG_FILE_NAME = 'db_sqlite_log';
-    private const DB_FILE = __DIR__ . '/../database/family-tree-db.sqlite';
+    private const DB_FILE = __DIR__ . '/../database/boilerplate-db.sqlite';
     private LogSystem $log;
     private string $dbFile;
     private ?PDO $pdo = null;
@@ -46,18 +53,19 @@ class SQLiteConnection
                 }
                 file_put_contents($this->dbFile, '');
 
-                $this->log->handleLog(
+                $this->log->handle(
                     LogSystem::INFO_LEVEL,
                     [
-                        'message' => "Database file was successfully created at {$this->dbFile}",
+                        'message' => 'Database file was successfully created.',
                     ],
                     self::LOG_FILE_NAME
                 );
             } catch (Exception $e) {
-                $this->log->handleLog(
+                $this->log->handle(
                     LogSystem::ERROR_LEVEL,
                     [
-                        'message' => 'Error creating the database file: ' . $e->getMessage(),
+                        'message' => 'Error creating the database file.',
+                        'db_error' => $e->getMessage(),
                     ],
                     self::LOG_FILE_NAME
                 );
@@ -73,11 +81,10 @@ class SQLiteConnection
     {
         if (!is_writable($this->dbFile)) {
             if (!chmod($this->dbFile, 0777)) {
-                $this->log->handleLog(
+                $this->log->handle(
                     LogSystem::ERROR_LEVEL,
                     [
-                        'message' => 'Failed to set write permissions on the file. Please check the log file: ' . self::LOG_FILE_NAME . ' for more details.',
-                        'db_error' => 'File does not have write permissions.',
+                        'message' => 'Failed to set write permissions on the file.',
                     ],
                     self::LOG_FILE_NAME
                 );
@@ -96,22 +103,14 @@ class SQLiteConnection
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            $this->log->handleLog(
+            $this->log->handle(
                 LogSystem::ERROR_LEVEL,
                 [
-                    'message' => 'Error connecting to the database. Please check the log file: ' . self::LOG_FILE_NAME . ' for more details.',
+                    'message' => 'Error connecting to the database.',
                     'db_error' => $e->getMessage(),
                 ],
                 self::LOG_FILE_NAME
             );
         }
-    }
-
-    /**
-     * Destructor to ensure PDO connection is closed.
-     */
-    public function __destruct()
-    {
-        $this->pdo = null;
     }
 }

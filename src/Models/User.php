@@ -2,14 +2,16 @@
 
 namespace LiviuVoica\BoilerplateMVC\Models;
 
-class User
+use LiviuVoica\BoilerplateMVC\Core\BaseModel;
+use LiviuVoica\BoilerplateMVC\Core\SQLiteORM;
+
+class User extends BaseModel
 {
-    private string $test;
+    protected string $table;
 
-    public function testMethod(): string
+    public function __construct(SQLiteORM $orm)
     {
-        $this->test = '999';
-
-        return "Response from User model: $this->test.";
+        parent::__construct($orm);
+        $this->table = 'users';
     }
 }

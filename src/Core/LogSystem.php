@@ -1,7 +1,15 @@
 <?php
 
-namespace LiviuVoica\BoilerplateMVC\Utils;
+namespace LiviuVoica\BoilerplateMVC\Core;
 
+/**
+ * Class LogSystem
+ * 
+ * Provides a simple file-based logging system with multiple log levels.
+ * This class writes log entries to daily log files inside a specified directory.
+ * Log files are named with an optional prefix, the current date, and a file extension.
+ * Each log entry includes a timestamp, log level, and a JSON-encoded context payload.
+ */
 class LogSystem
 {
     public const DEBUG_LEVEL = 'DEBUG';
@@ -16,9 +24,9 @@ class LogSystem
     public const DEFAULT_LOG_FILE = 'log';
     public const DEFAULT_LOG_FILE_EXTENSION = '.txt';
     private string $logDirectory;
+    private string $lastLogDate = '';
     private string $defaultLogFile;
     private string $defaultLogFileExtension;
-    private string $lastLogDate;
 
     public function __construct()
     {
@@ -30,14 +38,12 @@ class LogSystem
 
     /**
      * Handles logging by writing log entries to a specified log file.
-     * 
-     * @param string $level The log level (e.g., 'DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY').
+     *
+     * @param string $level The log level (e.g., 'DEBUG', 'INFO', etc.).
      * @param array $context The context of the log entry, which will be encoded as JSON.
-     * @param string|null $fileName The name of the log file. If not provided, the default log file is used.
-     * 
-     * @return void
+     * @param string|null $fileName Optional log file name prefix.
      */
-    public function handleLog($level, $context, $fileName): void
+    public function handle(string $level, array $context, ?string $fileName = null): void
     {
         $currentDate = date('Y-m-d');
 
@@ -45,14 +51,11 @@ class LogSystem
             $this->lastLogDate = $currentDate;
         }
 
-        $logFile = '';
-        $isFileName = gettype($fileName) === 'string' && $fileName !== null && $fileName !== '';
+        $filePrefix = $fileName && $fileName !== ''
+            ? $fileName
+            : $this->defaultLogFile;
 
-        if ($isFileName) {
-            $logFile = "{$this->logDirectory}/{$fileName}_{$currentDate}{$this->defaultLogFileExtension}";
-        } else {
-            $logFile = "{$this->logDirectory}/{$this->defaultLogFile}_{$currentDate}{$this->defaultLogFileExtension}";
-        }
+        $logFile = "{$this->logDirectory}/{$filePrefix}_{$currentDate}{$this->defaultLogFileExtension}";
 
         if (!is_dir($this->logDirectory)) {
             mkdir($this->logDirectory, 0777, true);
@@ -64,8 +67,9 @@ class LogSystem
             chmod($logFile, 0777);
         }
 
-        $contextJson = json_encode($context);
-        $logContent = "[" . date('Y-m-d H:i:s') . "] $level\nPayload: $contextJson\n\n";
+        $contextJson = json_encode($context, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $timestamp = date('Y-m-d H:i:s');
+        $logContent = "[{$timestamp}] {$level}\nPayload: {$contextJson}\n\n";
 
         file_put_contents($logFile, $logContent, FILE_APPEND);
     }
