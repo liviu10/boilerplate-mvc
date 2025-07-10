@@ -16,7 +16,6 @@ use PDO;
 class SQLiteConnection
 {
     private const LOG_FILE_NAME = 'db_sqlite_log';
-    private const DB_FILE = __DIR__ . '/../database/boilerplate-db.sqlite';
     private LogSystem $log;
     private string $dbFile;
     private ?PDO $pdo = null;
@@ -24,10 +23,8 @@ class SQLiteConnection
     public function __construct()
     {
         $this->log = new LogSystem();
-        $this->dbFile = self::DB_FILE;
-        $this->ensureDbExists();
-        $this->ensureWritable();
-        $this->connect();
+        $phinxConfig = require __DIR__ . '/../../phinx.php';
+        $this->setCurrentDatabase($phinxConfig);
     }
 
     /**
@@ -40,45 +37,35 @@ class SQLiteConnection
     }
 
     /**
-     * Ensures that the database file exists. If it doesn't, it creates it.
+     * Get the name of the database for the current environment
+     * and make sure that it has permissions.
      * @return void
      */
-    private function ensureDbExists(): void
+    private function setCurrentDatabase(array $phinxConfig): void
     {
-        if (!file_exists($this->dbFile)) {
-            try {
-                $dir = dirname($this->dbFile);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0777, true);
-                }
-                file_put_contents($this->dbFile, '');
+        $env = $_ENV['APP_ENV'] ?? 'development';
 
-                $this->log->handle(
-                    LogSystem::INFO_LEVEL,
-                    [
-                        'message' => 'Database file was successfully created.',
-                    ],
-                    self::LOG_FILE_NAME
-                );
-            } catch (Exception $e) {
-                $this->log->handle(
-                    LogSystem::ERROR_LEVEL,
-                    [
-                        'message' => 'Error creating the database file.',
-                        'db_error' => $e->getMessage(),
-                    ],
-                    self::LOG_FILE_NAME
-                );
-            }
+        if (!isset($phinxConfig['environments'][$env]['name'])) {
+            $this->log->handle(
+                LogSystem::ERROR_LEVEL,
+                [
+                    'message' => "Missing database path for environment '{$env}' in phinx configuration.",
+                    'phinx_config' => $phinxConfig,
+                ],
+                self::LOG_FILE_NAME
+            );
+
+            return;
         }
-    }
 
-    /**
-     * Ensures that the database file is writable.
-     * @return void
-     */
-    private function ensureWritable(): void
-    {
+        $path = $phinxConfig['environments'][$env]['name'];
+
+        if (!str_starts_with($path, '/')) {
+            $path = __DIR__ . '/../' . ltrim($path, '/');
+        }
+
+        $this->dbFile = "{$path}.sqlite3";
+
         if (!is_writable($this->dbFile)) {
             if (!chmod($this->dbFile, 0777)) {
                 $this->log->handle(
@@ -90,6 +77,8 @@ class SQLiteConnection
                 );
             }
         }
+
+        $this->connect();
     }
 
     /**
