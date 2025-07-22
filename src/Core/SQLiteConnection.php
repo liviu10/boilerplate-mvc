@@ -60,11 +60,30 @@ class SQLiteConnection
 
         $path = $phinxConfig['environments'][$env]['name'];
 
-        if (!str_starts_with($path, '/')) {
-            $path = __DIR__ . '/../' . ltrim($path, '/');
-        }
-
         $this->dbFile = "{$path}.sqlite3";
+
+        if (!file_exists($this->dbFile)) {
+            try {
+                $dir = dirname($this->dbFile);
+
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0777, true);
+                }
+
+                file_put_contents($this->dbFile, '');
+            } catch (Exception $e) {
+                $this->log->handle(
+                    LogSystem::ERROR_LEVEL,
+                    array(
+                        'message' => 'Error creating the database file',
+                        'db_error' => $e->getMessage(),
+                    ),
+                    self::LOG_FILE_NAME
+                );
+
+                return;
+            }
+        }
 
         if (!is_writable($this->dbFile)) {
             if (!chmod($this->dbFile, 0777)) {

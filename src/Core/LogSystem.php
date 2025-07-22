@@ -20,7 +20,7 @@ class LogSystem
     public const CRITICAL_LEVEL = 'CRITICAL';
     public const ALERT_LEVEL = 'ALERT';
     public const EMERGENCY_LEVEL = 'EMERGENCY';
-    public const LOG_DIRECTORY = '/storage';
+    public const LOG_DIRECTORY = '/storage/logs';
     public const DEFAULT_LOG_FILE = 'log';
     public const DEFAULT_LOG_FILE_EXTENSION = '.txt';
     private string $logDirectory;
